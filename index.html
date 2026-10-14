@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#050807" />
+    <title>PAC-MAN 2026 — The Living Maze</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/ui/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar">
+        <div class="brand">
+          <div class="brand-title">PAC-MAN <span class="year">2026</span></div>
+          <div class="brand-sub">THE LIVING MAZE</div>
+        </div>
+        <nav id="nav">
+          <button class="nav-btn active" data-nav="jugar">JUGAR</button>
+          <button class="nav-btn" data-nav="mapas" disabled title="Pronto">MAPAS</button>
+          <button class="nav-btn" data-nav="coleccion" disabled title="Pronto">COLECCIÓN</button>
+          <button class="nav-btn" data-nav="ajustes" id="btn-settings">AJUSTES</button>
+        </nav>
+        <div class="top-right">
+          <span class="credit" id="credit">CRÉDITO 01</span>
+          <button class="icon-btn" id="btn-mute" title="Silenciar (M)">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path id="mute-path" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn" id="btn-pause" title="Pausa (P)">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+          </button>
+          <button class="icon-btn gear" id="btn-gear" title="Ajustes">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.9 4a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2-1.2L16 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.5 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2 1.2L8 21h4l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.5-2-1.5c.06-.4.1-.8.1-1.2z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+      <main id="layout">
+        <aside id="hud-left" class="hud"></aside>
+        <section id="stage">
+          <canvas id="game" width="1472" height="1600"></canvas>
+          <div id="dpad" aria-hidden="true">
+            <button class="dp up" data-dir="up"></button>
+            <button class="dp left" data-dir="left"></button>
+            <button class="dp right" data-dir="right"></button>
+            <button class="dp down" data-dir="down"></button>
+          </div>
+          <button id="btn-jump" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3 5 11h4v7h6v-7h4z" fill="currentColor"/></svg>
+            <span>SALTO</span>
+          </button>
+          <button id="btn-fire" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 9h14l2-3 3 1.2L20 12h-7l-1.3 4.5H8.2L9.6 12H6v4H3v-4H2V9z" fill="currentColor"/></svg>
+            <span>FUEGO</span>
+          </button>
+        </section>
+        <aside id="hud-right" class="hud"></aside>
+      </main>
+      <div id="overlay" class="hidden"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
