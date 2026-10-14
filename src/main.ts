@@ -124,6 +124,10 @@ async function boot(): Promise<void> {
   input.onShoot = () => {
     game.firePac();
   };
+  input.onUsePlayer = (player) => {
+    if (game.state === 'playing' || game.state === 'ready') game.firePac(player);
+    else if (player === 2) input.onAction?.();
+  };
   document.getElementById('btn-jump')?.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     input.onJump?.();
@@ -204,6 +208,10 @@ async function boot(): Promise<void> {
       if (input.want) {
         game.pac.want = input.want;
         input.want = null;
+      }
+      if (input.want2) {
+        game.pac2.want = input.want2;
+        input.want2 = null;
       }
       game.update(dt);
       const jp = game.pac.jumpPhase();

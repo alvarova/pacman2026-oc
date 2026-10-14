@@ -72,6 +72,7 @@ export class Renderer {
       if (g.stateT < 0.35) this.drawGhosts(now);
     } else {
       this.drawPac();
+      this.drawPac2();
       this.drawGhosts(now);
     }
 
@@ -270,6 +271,23 @@ export class Renderer {
     drawPac(ctx, gx, gy + jv.dy, 13, dir, g.pac.mouthT * Math.PI, 0, sx, sy);
   }
 
+  private drawPac2(): void {
+    const p = this.game.pac2;
+    if (p.condition === 'jailed') return;
+    const ctx = this.ctx;
+    const jv = p.jumpVisual();
+    const dir: Dir = p.dir ?? p.facing;
+    ctx.save();
+    if (this.game.isInvisible(p)) ctx.globalAlpha = 0.28;
+    drawPac(ctx, p.x * TILE, p.y * TILE + jv.dy, 13, dir, p.mouthT * Math.PI, 0, jv.sx, jv.sy);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ff7f7f';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('2', p.x * TILE, p.y * TILE + 23);
+    ctx.restore();
+  }
+
   private drawPacDying(stateT: number): void {
     const g = this.game;
     const ctx = this.ctx;
@@ -308,6 +326,36 @@ export class Renderer {
   private drawWeapon(t: number): void {
     const g = this.game;
     const ctx = this.ctx;
+    for (const item of g.items) {
+      const cx = item.x * TILE + TILE / 2;
+      const cy = item.y * TILE + TILE / 2 + Math.sin(t * 5 + item.x) * 2;
+      const color = item.kind === 'ice' ? '#8eeeff' : item.kind === 'soap' ? '#b59cff' : item.kind === 'invisibility' ? '#b8ffce' : '#ffe97a';
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#172238';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.kind === 'gun' ? 'F' : item.kind === 'ice' ? 'H' : item.kind === 'soap' ? 'S' : 'I', cx, cy + 3);
+      ctx.restore();
+    }
+    if (g.rescueKey) {
+      const cx = g.rescueKey.x * TILE + TILE / 2;
+      const cy = g.rescueKey.y * TILE + TILE / 2;
+      ctx.save();
+      ctx.strokeStyle = '#ffd23f';
+      ctx.fillStyle = '#ffd23f';
+      ctx.shadowColor = '#ffd23f';
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(cx - 5, cy, 5, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillRect(cx, cy - 2, 11, 4); ctx.fillRect(cx + 7, cy + 2, 3, 5);
+      ctx.restore();
+    }
     if (g.pill) {
       const blink = g.pill.t < 3 && Math.sin(t * 12) < 0;
       if (!blink) {
@@ -357,6 +405,7 @@ export class Renderer {
     if (g.pacArmed) {
       drawPistol(ctx, g.pac.x * TILE, g.pac.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ffe97a');
     }
+    if (g.pac2.weapon) drawPistol(ctx, g.pac2.x * TILE, g.pac2.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ff7f7f');
     if (g.armedGhost) {
       const ag = g.armedGhost;
       drawPistol(ctx, ag.x * TILE, ag.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ff5b4d');

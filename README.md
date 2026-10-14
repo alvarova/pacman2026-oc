@@ -57,3 +57,10 @@ tests/       validez del mapa (conectividad, sin callejones) y targeting de IA
 ## Controles
 
 Flechas / WASD · **P** pausa · **M** silencio · Enter/JUGAR para empezar · swipe + d-pad en táctil.
+
+## Modo cooperativo local
+
+- **Jugador 1:** WASD y **F** para usar el objeto equipado.
+- **Jugador 2:** flechas y **Enter** para usar el objeto equipado.
+- Las vidas, puntuación y coleccionables son compartidos. Una captura lleva a la cárcel; si ambos quedan presos se pierde una única vida.
+- La configuración de duraciones, munición y protección está centralizada en `COOP` dentro de `src/game/constants.ts`.

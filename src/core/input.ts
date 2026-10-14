@@ -2,16 +2,14 @@ import type { Dir } from '../game/constants';
 
 export class Input {
   want: Dir | null = null;
+  want2: Dir | null = null;
   onPause?: () => void;
   onAction?: () => void;
   onMute?: () => void;
   onJump?: () => void;
   onShoot?: () => void;
+  onUsePlayer?: (player: 1 | 2) => void;
   private keys: Record<string, Dir> = {
-    ArrowUp: 'up',
-    ArrowDown: 'down',
-    ArrowLeft: 'left',
-    ArrowRight: 'right',
     KeyW: 'up',
     KeyS: 'down',
     KeyA: 'left',
@@ -43,14 +41,20 @@ export class Input {
       this.want = dir;
       return;
     }
+    const p2: Record<string, Dir> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+    if (p2[e.code]) {
+      e.preventDefault();
+      this.want2 = p2[e.code];
+      return;
+    }
     if (e.code === 'KeyP' || e.code === 'Escape') this.onPause?.();
     else if (e.code === 'Enter' || e.code === 'Space') {
       e.preventDefault();
       if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
       if (e.code === 'Space') this.onJump?.();
-      else this.onAction?.();
+      else this.onUsePlayer?.(2) ?? this.onAction?.();
     } else if (e.code === 'KeyM') this.onMute?.();
-    else if (e.code === 'KeyX') this.onShoot?.();
+    else if (e.code === 'KeyX' || e.code === 'KeyF') this.onUsePlayer?.(1) ?? this.onShoot?.();
   }
 
   setTouch(dir: Dir): void {

@@ -50,6 +50,10 @@ export class Ghost {
   wps: { x: number; y: number }[] = [];
   bobT = 0;
   deform = 0;
+  condition: 'active' | 'stunned' | 'frozen' | 'bubbled' = 'active';
+  conditionUntil = 0;
+  immuneUntil = 0;
+  invisibleUntil = 0;
 
   constructor(kind: GhostKind) {
     this.kind = kind;
@@ -64,6 +68,10 @@ export class Ghost {
     this.x = s.x;
     this.y = s.y;
     this.frightFlag = false;
+    this.condition = 'active';
+    this.conditionUntil = 0;
+    this.immuneUntil = 0;
+    this.invisibleUntil = 0;
     this.wps = [];
     if (this.kind === 'blinky') {
       this.state = 'active';
@@ -81,6 +89,7 @@ export class Ghost {
   }
 
   update(dt: number, host: GhostHost): void {
+    if (this.condition !== 'active') return;
     this.bobT += dt;
     this.deform = Math.max(0, this.deform - dt * 3.2);
     switch (this.state) {

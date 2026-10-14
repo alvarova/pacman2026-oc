@@ -102,6 +102,24 @@ export const GUN_LOS_RANGE = 7;
 export const GUN_AIM_TIME = 0.45;
 export const GUN_KILL_POINTS = 300;
 
+/** Parámetros de la simulación cooperativa. Se mantienen centralizados para poder
+ * ajustar la jugabilidad sin repartir números mágicos entre sistemas. */
+export const COOP = {
+  lives: 3,
+  iceDuration: 5,
+  bubbleDuration: 10,
+  invisibilityDuration: 6,
+  powerDuration: 8,
+  bulletStunDuration: 2,
+  ammo: 3,
+  releaseProtection: 1,
+  immobilizeImmunity: 3,
+  projectileSpeed: 20,
+  projectileRange: 8,
+  projectileCooldown: 0.25,
+  itemSpawnInterval: 12,
+} as const;
+
 export function frightTime(level: number): number {
   return FRIGHT_TABLE[Math.min(level - 1, FRIGHT_TABLE.length - 1)];
 }

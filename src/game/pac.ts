@@ -31,6 +31,16 @@ export class Pac {
   moving = false;
   deform = 0;
   jumpT = -1;
+  /** Estado físico; los efectos temporales viven separados para evitar booleanos incompatibles. */
+  condition: 'active' | 'stunned' | 'frozen' | 'bubbled' | 'jailed' = 'active';
+  conditionUntil = 0;
+  immuneUntil = 0;
+  invisibleUntil = 0;
+  powerUntil = 0;
+  weapon: 'gun' | 'ice' | 'soap' | null = null;
+  ammo = 0;
+  hasKey = false;
+  player = 1;
 
   reset(): void {
     this.x = PAC_START.x;
@@ -42,6 +52,14 @@ export class Pac {
     this.moving = false;
     this.deform = 0;
     this.jumpT = -1;
+    this.condition = 'active';
+    this.conditionUntil = 0;
+    this.immuneUntil = 0;
+    this.invisibleUntil = 0;
+    this.powerUntil = 0;
+    this.weapon = null;
+    this.ammo = 0;
+    this.hasKey = false;
   }
 
   tile(): { x: number; y: number } {
@@ -93,6 +111,10 @@ export class Pac {
   }
 
   update(dt: number, maze: MazeData, level: number, frightActive: boolean): void {
+    if (this.condition !== 'active') {
+      this.moving = false;
+      return;
+    }
     this.mouthT += dt * (this.dir ? 11 : 2.5);
     if (this.jumpT >= 0) {
       this.jumpT += dt;

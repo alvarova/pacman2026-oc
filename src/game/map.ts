@@ -40,9 +40,12 @@ export const MAP: string[] = [
 ];
 
 export const PAC_START = { x: 11.5, y: 14.5 };
+export const PAC2_START = { x: 12.5, y: 14.5 };
 export const PAC_START_DIR: Dir = 'left';
 export const DOOR_TILE = { x: 11, y: 10 };
 export const DOOR_OUTSIDE = { x: 11.5, y: 9.5 };
+export const JAIL_TILE = { x: 11.5, y: 11.5 };
+export const JAIL_RELEASE_TILE = { x: 11.5, y: 9.5 };
 export const EYES_TARGET = { x: 11, y: 9 };
 export const FRUIT_TILE = { x: 11, y: 17 };
 
