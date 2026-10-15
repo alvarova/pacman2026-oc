@@ -335,22 +335,20 @@ export function buildSantaFeLayer(maze: MazeData): HTMLCanvasElement {
   }
 
   // Los dos corredores principales hacen reconocible el cruce de referencia.
-  ctx.fillStyle = 'rgba(62, 91, 101, 0.62)';
-  ctx.fillRect(0, 11 * TILE, VIEW_W, 3 * TILE);
-  ctx.fillRect(10 * TILE, 0, 3 * TILE, VIEW_H);
+  // El asfalto ya fue dibujado exclusivamente en las celdas transitables.
   ctx.strokeStyle = 'rgba(255, 214, 120, 0.58)';
   ctx.setLineDash([10, 9]);
   ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(0, 12.5 * TILE); ctx.lineTo(VIEW_W, 12.5 * TILE); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(11.5 * TILE, 0); ctx.lineTo(11.5 * TILE, VIEW_H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(TILE, 14.5 * TILE); ctx.lineTo(VIEW_W - TILE, 14.5 * TILE); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(11.5 * TILE, TILE); ctx.lineTo(11.5 * TILE, 11 * TILE); ctx.moveTo(11.5 * TILE, 14 * TILE); ctx.lineTo(11.5 * TILE, VIEW_H - TILE); ctx.stroke();
   ctx.setLineDash([]);
 
   ctx.save();
   ctx.fillStyle = 'rgba(214, 244, 242, 0.72)';
   ctx.font = '700 12px Chakra Petch, sans-serif';
   ctx.letterSpacing = '1px';
-  ctx.fillText('BV. GÁLVEZ', 28, 12 * TILE - 7);
-  ctx.save(); ctx.translate(11 * TILE - 7, VIEW_H - 34); ctx.rotate(-Math.PI / 2); ctx.fillText('RIVADAVIA', 0, 0); ctx.restore();
+  ctx.fillText('BV. GÁLVEZ', 28, 14 * TILE - 7);
+  ctx.save(); ctx.translate(11 * TILE - 7, VIEW_H - 34); ctx.rotate(-Math.PI / 2); ctx.fillText('AV. RIVADAVIA', 0, 0); ctx.restore();
   ctx.font = '10px Chakra Petch, sans-serif';
   ctx.fillStyle = 'rgba(140, 183, 190, 0.55)';
   ctx.fillText('SANTA FE · ARGENTINA', 20, VIEW_H - 18);

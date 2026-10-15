@@ -39,6 +39,36 @@ export const MAP: string[] = [
   '#######################',
 ];
 
+/**
+ * Malla vial del escenario Santa Fe. Representa el entramado público de la
+ * zona Bv. Gálvez / Av. Rivadavia: las líneas son calles y cada bloque oscuro
+ * es una manzana no transitable. Se mantiene ortogonal para que el motor de
+ * movimiento por intersecciones sea determinista.
+ */
+function buildSantaFeMap(): string[] {
+  const roadX = new Set([2, 5, 8, 11, 14, 17, 20]);
+  const roadY = new Set([2, 5, 8, 11, 14, 17, 20, 22]);
+  const power = new Set(['2,2', '20,2', '2,20', '20,20']);
+  const rows: string[] = [];
+  for (let y = 0; y < ROWS; y++) {
+    let row = '';
+    for (let x = 0; x < COLS; x++) {
+      const onStreet = x > 0 && x < COLS - 1 && y > 0 && y < ROWS - 1 && (roadX.has(x) || roadY.has(y));
+      row += onStreet ? (power.has(`${x},${y}`) ? 'o' : '.') : '#';
+    }
+    rows.push(row);
+  }
+  // Casa de los fantasmas: edificio con acceso desde Av. Rivadavia.
+  const edit = (x: number, y: number, value: string): void => {
+    rows[y] = `${rows[y].slice(0, x)}${value}${rows[y].slice(x + 1)}`;
+  };
+  edit(11, 11, 'D');
+  for (const y of [12, 13]) for (const x of [10, 11, 12]) edit(x, y, 'H');
+  return rows;
+}
+
+export const SANTA_FE_MAP = buildSantaFeMap();
+
 export const PAC_START = { x: 11.5, y: 14.5 };
 export const PAC2_START = { x: 12.5, y: 14.5 };
 export const PAC_START_DIR: Dir = 'left';
@@ -77,13 +107,14 @@ export interface MazeData {
   secretCount: number;
 }
 
-export function parseMaze(): MazeData {
+export function parseMaze(mapId: 'garden' | 'santa-fe' = 'garden'): MazeData {
+  const source = mapId === 'santa-fe' ? SANTA_FE_MAP : MAP;
   const tiles = new Uint8Array(COLS * ROWS);
   const apples = new Uint8Array(COLS * ROWS);
   let totalApples = 0;
   let totalPower = 0;
   for (let y = 0; y < ROWS; y++) {
-    const row = MAP[y];
+    const row = source[y];
     for (let x = 0; x < COLS; x++) {
       const c = row[x];
       const i = y * COLS + x;

@@ -53,6 +53,7 @@ export class Game implements GhostHost {
   }
   setMap(mapId: MapId): void {
     this.mapId = mapId;
+    this.maze = parseMaze(mapId);
     this.resetLevel(true);
   }
   setPlayerMode(playerMode: PlayerMode): void {
