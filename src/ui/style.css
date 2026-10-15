@@ -822,6 +822,10 @@ body {
 }
 
 .menu-map-button { margin-top: 12px; display: block; margin-inline: auto; }
+.mode-actions { display: flex; justify-content: center; align-items: center; gap: 12px; }
+.mode-actions .btn-primary { padding-inline: 28px; }
+.mode-actions .btn-ghost { padding-inline: 20px; }
+.menu-mode-copy { margin-top: 11px; color: var(--text-dim); font-size: 11px; letter-spacing: .08em; }
 
 .map-options { display: grid; gap: 12px; margin: 0 auto 22px; max-width: 490px; }
 .map-option { text-align: left; padding: 17px 20px; border-radius: 12px; color: var(--text); background: rgba(80,247,216,.04); border: 1px solid var(--panel-border); cursor: pointer; font-family: var(--font-body); }

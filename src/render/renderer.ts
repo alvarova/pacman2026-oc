@@ -77,7 +77,7 @@ export class Renderer {
       if (g.stateT < 0.35) this.drawGhosts(now);
     } else {
       this.drawPac();
-      this.drawPac2();
+      if (g.playerMode === 'coop') this.drawPac2();
       this.drawGhosts(now);
     }
 
@@ -423,7 +423,7 @@ export class Renderer {
     if (g.pacArmed) {
       drawPistol(ctx, g.pac.x * TILE, g.pac.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ffe97a');
     }
-    if (g.pac2.weapon) drawPistol(ctx, g.pac2.x * TILE, g.pac2.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ff7f7f');
+    if (g.playerMode === 'coop' && g.pac2.weapon) drawPistol(ctx, g.pac2.x * TILE, g.pac2.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ff7f7f');
     if (g.armedGhost) {
       const ag = g.armedGhost;
       drawPistol(ctx, ag.x * TILE, ag.y * TILE - 22 + Math.sin(t * 5) * 1.5, '#ff5b4d');

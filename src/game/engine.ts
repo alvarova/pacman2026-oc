@@ -8,6 +8,7 @@ import { Ghost, type GhostHost } from './ghost';
 
 export type GameState = 'menu' | 'ready' | 'playing' | 'dying' | 'levelclear' | 'gameover' | 'paused';
 export type MapId = 'garden' | 'santa-fe';
+export type PlayerMode = 'solo' | 'coop';
 export type TacticalItem = 'gun' | 'ice' | 'soap';
 export type ProjectileType = TacticalItem;
 export interface Bullet { x:number; y:number; dx:number; dy:number; from:'pac'|'ghost'; owner?:number; type?:ProjectileType; travelled?:number; }
@@ -32,8 +33,11 @@ export class Game implements GhostHost {
   state:GameState='menu'; prevState:GameState='menu'; level=1; score=0; record=0; lives=COOP.lives;
   /** El escenario cambia la presentación y la identidad del recorrido, no las reglas. */
   mapId: MapId = 'garden';
+  /** Conserva el comportamiento histórico hasta que el jugador elija Solo. */
+  playerMode: PlayerMode = 'coop';
   maze:MazeData=parseMaze(); apples:Uint8Array=this.maze.baseApples.slice(); applesEaten=0; powerEaten=0;
-  pac=new Pac(); pac2=new Pac(); pacs:Pac[]=[this.pac,this.pac2];
+  pac=new Pac(); pac2=new Pac();
+  get pacs(): Pac[] { return this.playerMode === 'coop' ? [this.pac, this.pac2] : [this.pac]; }
   ghosts:Ghost[]=[new Ghost('blinky'),new Ghost('pinky'),new Ghost('inky'),new Ghost('clyde')];
   mode:'scatter'|'chase'='scatter'; modeIdx=0; modeT=0; fright=0; frightDur=1; combo=0; levelTime=0; stateT=0;
   fruitSpawned=[false,false]; fruitActive=false; fruitIdx=0; fruitT=0; secretsFound=new Set<number>(); collectibles=0; nextExtra=EXTRA_LIFE_AT;
@@ -51,13 +55,17 @@ export class Game implements GhostHost {
     this.mapId = mapId;
     this.resetLevel(true);
   }
+  setPlayerMode(playerMode: PlayerMode): void {
+    this.playerMode = playerMode;
+    this.resetLevel(true);
+  }
   get applesLeft(){ return this.maze.totalApples+this.maze.totalPower-this.applesEaten-this.powerEaten; }
   isInvisible(p: Pac | Ghost){ return p.invisibleUntil > this.simTime; }
   get elroy(){ return this.applesLeft<=ELROY2?2:this.applesLeft<=ELROY1?1:0; }
   get pacTile(){ return this.pac.tile(); } get pacFacing():Dir{return this.pac.facing;} get blinkyTile(){return this.ghosts[0].tile();} get levelSpeed(){return 1;} random(){return Math.random();}
   private setState(s:GameState){ const prev=this.state; this.prevState=prev; this.state=s; this.stateT=0; this.events.onState?.(s,prev); }
   setStatePublic(s:GameState){this.setState(s);}
-  startGame(){ this.level=1;this.score=0;this.lives=COOP.lives;this.collectibles=0;this.nextExtra=EXTRA_LIFE_AT;this.resetLevel(true);this.events.onScore?.(this.score,this.record);this.events.onLives?.(this.lives);this.events.onLevel?.(this.level);this.setState('ready'); }
+  startGame(playerMode: PlayerMode=this.playerMode){ this.playerMode=playerMode;this.level=1;this.score=0;this.lives=COOP.lives;this.collectibles=0;this.nextExtra=EXTRA_LIFE_AT;this.resetLevel(true);this.events.onScore?.(this.score,this.record);this.events.onLives?.(this.lives);this.events.onLevel?.(this.level);this.setState('ready'); }
   resetLevel(full:boolean){ if(full){this.apples=this.maze.baseApples.slice();this.applesEaten=0;this.powerEaten=0;this.secretsFound.clear();this.fruitSpawned=[false,false];this.events.onSecrets?.(0,this.maze.secretCount);this.events.onApples?.(0,this.maze.totalApples,0,this.maze.totalPower);} this.resetPositions(); }
   resetPositions(){
     this.pac.reset(); this.pac2.reset(); this.pac2.x=PAC2_START.x;this.pac2.y=PAC2_START.y;this.pac2.dir='right';this.pac2.facing='right';

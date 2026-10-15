@@ -1,4 +1,4 @@
-import type { Game, GameState, MapId } from '../game/engine';
+import type { Game, GameState, MapId, PlayerMode } from '../game/engine';
 
 function el(html: string): HTMLElement {
   const t = document.createElement('template');
@@ -42,7 +42,11 @@ export class Screens {
         <h1 class="menu-logo">PAC-MAN <span>2026</span></h1>
         <div class="menu-sub">THE LIVING MAZE</div>
         <p class="menu-desc">${this.game.mapId === 'santa-fe' ? 'Santa Fe · Bv. Gálvez y Rivadavia. Calles nocturnas, borde urbano y fantasmas al acecho.' : 'El laberinto vive. Cuatro fantasmas te cazan con personalidad propia.'}</p>
-        <button class="btn-primary" id="btn-play">JUGAR</button>
+        <div class="mode-actions">
+          <button class="btn-primary" id="btn-solo">JUGAR SOLO</button>
+          <button class="btn-ghost" id="btn-coop">COOPERATIVO</button>
+        </div>
+        <div class="menu-mode-copy">${this.game.playerMode === 'coop' ? 'Modo actual: cooperativo local · J1 flechas/WASD · J2 IJKL' : 'Modo actual: solo · elegí cooperativo para sumar a Pac‑Man 2'}</div>
         <button class="btn-ghost menu-map-button" id="btn-maps">${this.game.mapId === 'santa-fe' ? 'MAPA: SANTA FE' : 'ELEGIR MAPA'}</button>
         <div class="menu-hint">FLECHAS / WASD moverte · ESPACIO salta · X dispara · P pausa · M silencio</div>
         <div class="menu-record">RÉCORD <b>${String(this.game.record).padStart(6, '0')}</b></div>
@@ -57,10 +61,9 @@ export class Screens {
         drawGhost(c2, 18, 19, 12, k, 'down', 0.5, 'normal');
       });
     });
-    div.querySelector('#btn-play')!.addEventListener('click', () => {
-      this.game.startGame();
-      this.onAction?.();
-    });
+    const start = (mode: PlayerMode): void => { this.game.startGame(mode); this.onAction?.(); };
+    div.querySelector('#btn-solo')!.addEventListener('click', () => start('solo'));
+    div.querySelector('#btn-coop')!.addEventListener('click', () => start('coop'));
     div.querySelector('#btn-maps')!.addEventListener('click', () => this.mapPicker());
   }
 
@@ -132,7 +135,7 @@ export class Screens {
     this.overlay.append(div);
     this.overlay.classList.remove('hidden');
     div.querySelector('#btn-retry')!.addEventListener('click', () => {
-      this.game.startGame();
+      this.game.startGame(this.game.playerMode);
       this.onAction?.();
     });
     div.querySelector('#btn-quit2')!.addEventListener('click', () => {

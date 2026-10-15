@@ -100,7 +100,7 @@ async function boot(): Promise<void> {
   };
   input.onAction = () => {
     if (game.state === 'menu' || game.state === 'gameover') {
-      game.startGame();
+      game.startGame(game.playerMode);
       audio.resume();
     } else if (game.state === 'paused') {
       game.togglePause();
@@ -166,7 +166,7 @@ async function boot(): Promise<void> {
   btnPlayNav?.addEventListener('click', () => {
     if (game.state === 'menu') {
       audio.resume();
-      game.startGame();
+      game.startGame(game.playerMode);
     } else {
       game.togglePause();
     }
