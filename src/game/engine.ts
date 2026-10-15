@@ -7,6 +7,7 @@ import { Pac } from './pac';
 import { Ghost, type GhostHost } from './ghost';
 
 export type GameState = 'menu' | 'ready' | 'playing' | 'dying' | 'levelclear' | 'gameover' | 'paused';
+export type MapId = 'garden' | 'santa-fe';
 export type TacticalItem = 'gun' | 'ice' | 'soap';
 export type ProjectileType = TacticalItem;
 export interface Bullet { x:number; y:number; dx:number; dy:number; from:'pac'|'ghost'; owner?:number; type?:ProjectileType; travelled?:number; }
@@ -29,6 +30,8 @@ const RECORD_KEY='pacman26.record';
 /** Simulación determinista de las reglas. Canvas, HUD y audio sólo consumen sus eventos. */
 export class Game implements GhostHost {
   state:GameState='menu'; prevState:GameState='menu'; level=1; score=0; record=0; lives=COOP.lives;
+  /** El escenario cambia la presentación y la identidad del recorrido, no las reglas. */
+  mapId: MapId = 'garden';
   maze:MazeData=parseMaze(); apples:Uint8Array=this.maze.baseApples.slice(); applesEaten=0; powerEaten=0;
   pac=new Pac(); pac2=new Pac(); pacs:Pac[]=[this.pac,this.pac2];
   ghosts:Ghost[]=[new Ghost('blinky'),new Ghost('pinky'),new Ghost('inky'),new Ghost('clyde')];
@@ -42,6 +45,10 @@ export class Game implements GhostHost {
   constructor(){
     this.pac.player=1; this.pac2.player=2;
     try { this.record=Number(localStorage.getItem(RECORD_KEY))||0; } catch { this.record=0; }
+    this.resetLevel(true);
+  }
+  setMap(mapId: MapId): void {
+    this.mapId = mapId;
     this.resetLevel(true);
   }
   get applesLeft(){ return this.maze.totalApples+this.maze.totalPower-this.applesEaten-this.powerEaten; }

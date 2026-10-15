@@ -171,6 +171,9 @@ async function boot(): Promise<void> {
       game.togglePause();
     }
   });
+  document.querySelector<HTMLButtonElement>('#nav .nav-btn[data-nav="mapas"]')?.addEventListener('click', () => {
+    if (game.state === 'menu') screens.mapPicker();
+  });
   const btnMute = document.getElementById('btn-mute')!;
   btnMute.addEventListener('click', () => {
     audio.resume();

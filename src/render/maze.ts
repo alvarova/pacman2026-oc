@@ -293,6 +293,73 @@ export function buildMazeLayer(maze: MazeData): HTMLCanvasElement {
   return canvas;
 }
 
+/**
+ * Lectura urbana estilizada de Santa Fe (Argentina), centrada en Bv. Gálvez y
+ * Rivadavia. Los ejes y nombres proceden de OpenStreetMap; se rasterizan sobre
+ * la grilla jugable para conservar la simulación determinista del juego.
+ * © OpenStreetMap contributors, ODbL.
+ */
+export function buildSantaFeLayer(maze: MazeData): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = VIEW_W * 2;
+  canvas.height = VIEW_H * 2;
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(2, 2);
+
+  ctx.fillStyle = '#071018';
+  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+
+  // Manzanas: el mismo grafo transitable se muestra como una trama de ciudad.
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const tile = maze.tiles[y * COLS + x];
+    const px = x * TILE, py = y * TILE;
+    if (tile === T.Wall || tile === T.Secret || tile === T.House) {
+      const shade = 13 + Math.floor(hash2(x + 50, y + 70) * 12);
+      ctx.fillStyle = `rgb(${shade}, ${shade + 9}, ${shade + 17})`;
+      ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
+      ctx.strokeStyle = 'rgba(105, 147, 166, 0.16)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 3.5, py + 3.5, TILE - 7, TILE - 7);
+      if (hash2(x + 8, y + 21) > .48) {
+        ctx.fillStyle = 'rgba(255, 210, 120, 0.13)';
+        ctx.fillRect(px + 7, py + 8, 4, 3);
+        ctx.fillRect(px + 18, py + 18, 5, 3);
+      }
+    } else {
+      ctx.fillStyle = '#27333c';
+      ctx.fillRect(px, py, TILE, TILE);
+      ctx.strokeStyle = 'rgba(203, 231, 235, 0.12)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + .5, py + .5, TILE - 1, TILE - 1);
+    }
+  }
+
+  // Los dos corredores principales hacen reconocible el cruce de referencia.
+  ctx.fillStyle = 'rgba(62, 91, 101, 0.62)';
+  ctx.fillRect(0, 11 * TILE, VIEW_W, 3 * TILE);
+  ctx.fillRect(10 * TILE, 0, 3 * TILE, VIEW_H);
+  ctx.strokeStyle = 'rgba(255, 214, 120, 0.58)';
+  ctx.setLineDash([10, 9]);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, 12.5 * TILE); ctx.lineTo(VIEW_W, 12.5 * TILE); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(11.5 * TILE, 0); ctx.lineTo(11.5 * TILE, VIEW_H); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(214, 244, 242, 0.72)';
+  ctx.font = '700 12px Chakra Petch, sans-serif';
+  ctx.letterSpacing = '1px';
+  ctx.fillText('BV. GÁLVEZ', 28, 12 * TILE - 7);
+  ctx.save(); ctx.translate(11 * TILE - 7, VIEW_H - 34); ctx.rotate(-Math.PI / 2); ctx.fillText('RIVADAVIA', 0, 0); ctx.restore();
+  ctx.font = '10px Chakra Petch, sans-serif';
+  ctx.fillStyle = 'rgba(140, 183, 190, 0.55)';
+  ctx.fillText('SANTA FE · ARGENTINA', 20, VIEW_H - 18);
+  ctx.textAlign = 'right';
+  ctx.fillText('© OpenStreetMap contributors', VIEW_W - 20, VIEW_H - 18);
+  ctx.restore();
+  return canvas;
+}
+
 export function buildVignette(): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = VIEW_W * 2;

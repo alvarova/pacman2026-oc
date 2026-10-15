@@ -11,13 +11,13 @@ import { FRUIT_TILE, LAMPS, type MazeData } from '../game/map';
 import type { Game } from '../game/engine';
 import type { Ghost } from '../game/ghost';
 import { Particles, FloatTexts } from './particles';
-import { buildMazeLayer, buildVignette } from './maze';
+import { buildMazeLayer, buildSantaFeLayer, buildVignette } from './maze';
 import { drawGhost, drawPac, type GhostDrawMode, type ItemSprites } from './sprites';
 
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
   private mazeLayer: HTMLCanvasElement | null = null;
-  private mazeLevel = -1;
+  private mazeKey = '';
   private vignette = buildVignette();
   private shake = 0;
   private lastT = performance.now() / 1000;
@@ -37,9 +37,10 @@ export class Renderer {
   }
 
   private ensureMaze(maze: MazeData, level: number): void {
-    if (this.mazeLayer && this.mazeLevel === level) return;
-    this.mazeLayer = buildMazeLayer(maze);
-    this.mazeLevel = level;
+    const key = `${this.game.mapId}:${level}`;
+    if (this.mazeLayer && this.mazeKey === key) return;
+    this.mazeLayer = this.game.mapId === 'santa-fe' ? buildSantaFeLayer(maze) : buildMazeLayer(maze);
+    this.mazeKey = key;
   }
 
   draw(): void {
@@ -58,9 +59,13 @@ export class Renderer {
     ctx.clearRect(-8, -8, VIEW_W + 16, VIEW_H + 16);
     ctx.drawImage(this.mazeLayer!, 0, 0, VIEW_W, VIEW_H);
 
-    this.drawFountain(now);
-    this.drawLamps(now);
-    this.drawSecrets(now);
+    if (g.mapId === 'garden') {
+      this.drawFountain(now);
+      this.drawLamps(now);
+      this.drawSecrets(now);
+    } else {
+      this.drawStreetOverlay(now);
+    }
 
     if (g.state !== 'levelclear') {
       this.drawApples(now);
@@ -99,6 +104,19 @@ export class Renderer {
       if (Math.sin(now * 6) > -0.4) ctx.fillText('PREPARATE...', VIEW_W / 2, 15.9 * TILE);
       ctx.shadowBlur = 0;
     }
+  }
+
+  private drawStreetOverlay(t: number): void {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const pulse = 0.65 + Math.sin(t * 2) * 0.12;
+    ctx.strokeStyle = `rgba(110, 247, 221, ${pulse})`;
+    ctx.shadowColor = '#6ef7dd';
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(6, 6, VIEW_W - 12, VIEW_H - 12);
+    ctx.restore();
   }
 
   private drawFountain(t: number): void {

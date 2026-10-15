@@ -1,4 +1,4 @@
-import type { Game, GameState } from '../game/engine';
+import type { Game, GameState, MapId } from '../game/engine';
 
 function el(html: string): HTMLElement {
   const t = document.createElement('template');
@@ -41,8 +41,9 @@ export class Screens {
         </div>
         <h1 class="menu-logo">PAC-MAN <span>2026</span></h1>
         <div class="menu-sub">THE LIVING MAZE</div>
-        <p class="menu-desc">El laberinto vive. Cuatro fantasmas te cazan con personalidad propia.<br/>Come las 265 manzanas, enciende las doradas y encuentra los 3 caminos secretos.</p>
+        <p class="menu-desc">${this.game.mapId === 'santa-fe' ? 'Santa Fe · Bv. Gálvez y Rivadavia. Calles nocturnas, borde urbano y fantasmas al acecho.' : 'El laberinto vive. Cuatro fantasmas te cazan con personalidad propia.'}</p>
         <button class="btn-primary" id="btn-play">JUGAR</button>
+        <button class="btn-ghost menu-map-button" id="btn-maps">${this.game.mapId === 'santa-fe' ? 'MAPA: SANTA FE' : 'ELEGIR MAPA'}</button>
         <div class="menu-hint">FLECHAS / WASD moverte · ESPACIO salta · X dispara · P pausa · M silencio</div>
         <div class="menu-record">RÉCORD <b>${String(this.game.record).padStart(6, '0')}</b></div>
       </div>`);
@@ -60,6 +61,29 @@ export class Screens {
       this.game.startGame();
       this.onAction?.();
     });
+    div.querySelector('#btn-maps')!.addEventListener('click', () => this.mapPicker());
+  }
+
+  mapPicker(): void {
+    const selected = this.game.mapId;
+    this.overlay.innerHTML = '';
+    const div = el(`
+      <div class="screen map-picker">
+        <h2 class="screen-title">MAPAS</h2>
+        <p class="menu-desc">Elegí el escenario antes de comenzar la partida.</p>
+        <div class="map-options">
+          <button class="map-option ${selected === 'garden' ? 'selected' : ''}" data-map="garden"><b>JARDÍN VIVIENTE</b><span>El laberinto clásico</span></button>
+          <button class="map-option santa ${selected === 'santa-fe' ? 'selected' : ''}" data-map="santa-fe"><b>SANTA FE · BOULEVARD</b><span>Bv. Gálvez y Rivadavia · datos OSM</span></button>
+        </div>
+        <button class="btn-ghost" id="btn-back">VOLVER</button>
+      </div>`);
+    this.overlay.append(div);
+    this.overlay.classList.remove('hidden');
+    div.querySelectorAll<HTMLButtonElement>('[data-map]').forEach((button) => button.addEventListener('click', () => {
+      this.game.setMap(button.dataset.map as MapId);
+      this.menu();
+    }));
+    div.querySelector('#btn-back')!.addEventListener('click', () => this.menu());
   }
 
   pause(): void {
