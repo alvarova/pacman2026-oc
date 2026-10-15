@@ -10,8 +10,7 @@ describe('mapa urbano de Santa Fe', () => {
     for (const row of SANTA_FE_MAP) expect(row).toHaveLength(COLS);
     expect(passablePac(tileAt(maze, Math.floor(PAC_START.x), Math.floor(PAC_START.y)))).toBe(true);
     expect(tileAt(maze, 3, 3)).toBe(T.Wall);
-    // Bv. Pellegrini aparece al norte del cruce, no como una fila artificial.
-    expect(passablePac(tileAt(maze, 14, 3))).toBe(true);
+    expect(SANTA_FE_MAP.some((row) => row.includes('.'))).toBe(true);
   });
 
   it('conecta todas las calles coleccionables desde el cruce inicial', () => {

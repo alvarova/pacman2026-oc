@@ -70,20 +70,29 @@ export function projectSantaFePoint([lon, lat]: readonly [number, number]): { x:
   return { x: 11.5 + (lon - SANTA_FE_CENTER[0]) * SANTA_FE_SCALE, y: 14.5 - (lat - SANTA_FE_CENTER[1]) * SANTA_FE_SCALE };
 }
 
-/** Rasteriza los trazos de OSM en corredores que usa el motor de colisiones. */
+/** Rasteriza los trazos de OSM en corredores ortogonales que usa el motor. */
 function buildSantaFeMap(): string[] {
   const street = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => false));
   const paint = (x: number, y: number): void => {
-    for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) {
-      if (xx > 0 && xx < COLS - 1 && yy > 0 && yy < ROWS - 1) street[yy][xx] = true;
-    }
+    if (x > 0 && x < COLS - 1 && y > 0 && y < ROWS - 1) street[y][x] = true;
   };
   for (const road of SANTA_FE_ROADS) for (let i = 1; i < road.points.length; i++) {
     const a = projectSantaFePoint(road.points[i - 1]), b = projectSantaFePoint(road.points[i]);
-    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) * 3));
-    for (let step = 0; step <= steps; step++) paint(Math.round(a.x + (b.x - a.x) * step / steps), Math.round(a.y + (b.y - a.y) * step / steps));
+    let x = Math.round(a.x), y = Math.round(a.y);
+    const targetX = Math.round(b.x), targetY = Math.round(b.y);
+    paint(x, y);
+    // Cada diagonal de OSM se convierte en dos tramos: Pac-Man no atraviesa
+    // esquinas ni edificios, sólo dobla en una calle visible.
+    while (x !== targetX || y !== targetY) {
+      if (x !== targetX) x += Math.sign(targetX - x);
+      paint(x, y);
+      if (y !== targetY) y += Math.sign(targetY - y);
+      paint(x, y);
+    }
   }
-  const power = new Set(['3,3', '19,4', '4,21', '18,20']);
+  // Asegura el cruce de aparición entre Gálvez y Rivadavia.
+  paint(11, 14);
+  const power = new Set(['14,3', '19,6', '5,20', '17,20']);
   const rows = street.map((line, y) => line.map((onStreet, x) => onStreet ? (power.has(`${x},${y}`) ? 'o' : '.') : '#').join(''));
   // Casa de los fantasmas: edificio con acceso desde Av. Rivadavia.
   const edit = (x: number, y: number, value: string): void => {

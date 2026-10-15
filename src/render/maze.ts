@@ -334,22 +334,18 @@ export function buildSantaFeLayer(maze: MazeData): HTMLCanvasElement {
     }
   }
 
-  // Trazas exactas del extracto OSM, por encima de la máscara de colisiones.
-  ctx.lineCap = 'round';
-  for (const road of SANTA_FE_ROADS) {
-    ctx.beginPath();
-    road.points.forEach((point, i) => {
-      const p = projectSantaFePoint(point);
-      if (i === 0) ctx.moveTo(p.x * TILE, p.y * TILE); else ctx.lineTo(p.x * TILE, p.y * TILE);
-    });
-    const boulevard = road.name.startsWith('Bulevar');
-    ctx.strokeStyle = boulevard ? '#f3c969' : '#ffffff';
-    ctx.lineWidth = boulevard ? 18 : 10;
-    ctx.stroke();
-    ctx.strokeStyle = boulevard ? '#d5a94e' : '#c7c3bc';
-    ctx.lineWidth = boulevard ? 1.5 : 1;
-    ctx.stroke();
-  }
+  // Sólo las celdas T.Path son calles: no se pinta ninguna vía decorativa que
+  // Pac-Man no pueda usar. El bulevar se resalta sobre el mismo corredor.
+  const boulevard = SANTA_FE_ROADS[0].points;
+  ctx.beginPath();
+  boulevard.forEach((point, i) => {
+    const p = projectSantaFePoint(point);
+    if (i === 0) ctx.moveTo(Math.round(p.x) * TILE + TILE / 2, Math.round(p.y) * TILE + TILE / 2);
+    else ctx.lineTo(Math.round(p.x) * TILE + TILE / 2, Math.round(p.y) * TILE + TILE / 2);
+  });
+  ctx.strokeStyle = 'rgba(239, 194, 84, .72)';
+  ctx.lineWidth = 4;
+  ctx.stroke();
 
   ctx.save();
   ctx.fillStyle = '#4d4a44';
