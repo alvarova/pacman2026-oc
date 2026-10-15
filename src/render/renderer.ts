@@ -57,6 +57,18 @@ export class Renderer {
 
     ctx.setTransform(DPR, 0, 0, DPR, sx * DPR, sy * DPR);
     ctx.clearRect(-8, -8, VIEW_W + 16, VIEW_H + 16);
+    const cityCamera = g.mapId === 'santa-fe';
+    if (cityCamera) {
+      const zoom = 1.9;
+      const halfW = VIEW_W / zoom / 2;
+      const halfH = VIEW_H / zoom / 2;
+      const cx = Math.max(halfW, Math.min(VIEW_W - halfW, g.pac.x * TILE));
+      const cy = Math.max(halfH, Math.min(VIEW_H - halfH, g.pac.y * TILE));
+      ctx.save();
+      ctx.translate(VIEW_W / 2, VIEW_H / 2);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-cx, -cy);
+    }
     ctx.drawImage(this.mazeLayer!, 0, 0, VIEW_W, VIEW_H);
 
     if (g.mapId === 'garden') {
@@ -87,6 +99,8 @@ export class Renderer {
     this.floats.draw(ctx);
 
     this.drawWeapon(now);
+
+    if (cityCamera) ctx.restore();
 
     ctx.drawImage(this.vignette, 0, 0, VIEW_W, VIEW_H);
 

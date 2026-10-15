@@ -41,7 +41,7 @@ export class Screens {
         </div>
         <h1 class="menu-logo">PAC-MAN <span>2026</span></h1>
         <div class="menu-sub">THE LIVING MAZE</div>
-        <p class="menu-desc">${this.game.mapId === 'santa-fe' ? 'Santa Fe · Bv. Gálvez y Rivadavia. Calles nocturnas, borde urbano y fantasmas al acecho.' : 'El laberinto vive. Cuatro fantasmas te cazan con personalidad propia.'}</p>
+        <p class="menu-desc">${this.game.mapId === 'santa-fe' ? 'Santa Fe · Bv. Gálvez y Rivadavia. Calles reales de OpenStreetMap, cámara móvil y fantasmas al acecho.' : 'El laberinto vive. Cuatro fantasmas te cazan con personalidad propia.'}</p>
         <div class="mode-actions">
           <button class="btn-primary" id="btn-solo">JUGAR SOLO</button>
           <button class="btn-ghost" id="btn-coop">COOPERATIVO</button>

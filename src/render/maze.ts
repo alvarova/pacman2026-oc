@@ -1,5 +1,5 @@
 import { COLS, ROWS, TILE, TUNNEL_ROW, VIEW_H, VIEW_W } from '../game/constants';
-import { LAMPS, T, type MazeData } from '../game/map';
+import { LAMPS, projectSantaFePoint, SANTA_FE_ROADS, T, type MazeData } from '../game/map';
 
 function hash2(x: number, y: number): number {
   let n = Math.imul(x, 374761393) + Math.imul(y, 668265263);
@@ -306,7 +306,7 @@ export function buildSantaFeLayer(maze: MazeData): HTMLCanvasElement {
   const ctx = canvas.getContext('2d')!;
   ctx.scale(2, 2);
 
-  ctx.fillStyle = '#071018';
+  ctx.fillStyle = '#e6e4df';
   ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
   // Manzanas: el mismo grafo transitable se muestra como una trama de ciudad.
@@ -314,43 +314,53 @@ export function buildSantaFeLayer(maze: MazeData): HTMLCanvasElement {
     const tile = maze.tiles[y * COLS + x];
     const px = x * TILE, py = y * TILE;
     if (tile === T.Wall || tile === T.Secret || tile === T.House) {
-      const shade = 13 + Math.floor(hash2(x + 50, y + 70) * 12);
-      ctx.fillStyle = `rgb(${shade}, ${shade + 9}, ${shade + 17})`;
+      const shade = 198 + Math.floor(hash2(x + 50, y + 70) * 18);
+      ctx.fillStyle = `rgb(${shade}, ${shade - 1}, ${shade - 4})`;
       ctx.fillRect(px + 1, py + 1, TILE - 2, TILE - 2);
-      ctx.strokeStyle = 'rgba(105, 147, 166, 0.16)';
+      ctx.strokeStyle = 'rgba(130, 124, 114, 0.25)';
       ctx.lineWidth = 1;
       ctx.strokeRect(px + 3.5, py + 3.5, TILE - 7, TILE - 7);
       if (hash2(x + 8, y + 21) > .48) {
-        ctx.fillStyle = 'rgba(255, 210, 120, 0.13)';
+        ctx.fillStyle = 'rgba(160, 150, 136, 0.26)';
         ctx.fillRect(px + 7, py + 8, 4, 3);
         ctx.fillRect(px + 18, py + 18, 5, 3);
       }
     } else {
-      ctx.fillStyle = '#27333c';
+      ctx.fillStyle = '#faf9f5';
       ctx.fillRect(px, py, TILE, TILE);
-      ctx.strokeStyle = 'rgba(203, 231, 235, 0.12)';
+      ctx.strokeStyle = 'rgba(165, 160, 151, 0.35)';
       ctx.lineWidth = 1;
       ctx.strokeRect(px + .5, py + .5, TILE - 1, TILE - 1);
     }
   }
 
-  // Los dos corredores principales hacen reconocible el cruce de referencia.
-  // El asfalto ya fue dibujado exclusivamente en las celdas transitables.
-  ctx.strokeStyle = 'rgba(255, 214, 120, 0.58)';
-  ctx.setLineDash([10, 9]);
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(TILE, 14.5 * TILE); ctx.lineTo(VIEW_W - TILE, 14.5 * TILE); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(11.5 * TILE, TILE); ctx.lineTo(11.5 * TILE, 11 * TILE); ctx.moveTo(11.5 * TILE, 14 * TILE); ctx.lineTo(11.5 * TILE, VIEW_H - TILE); ctx.stroke();
-  ctx.setLineDash([]);
+  // Trazas exactas del extracto OSM, por encima de la máscara de colisiones.
+  ctx.lineCap = 'round';
+  for (const road of SANTA_FE_ROADS) {
+    ctx.beginPath();
+    road.points.forEach((point, i) => {
+      const p = projectSantaFePoint(point);
+      if (i === 0) ctx.moveTo(p.x * TILE, p.y * TILE); else ctx.lineTo(p.x * TILE, p.y * TILE);
+    });
+    const boulevard = road.name.startsWith('Bulevar');
+    ctx.strokeStyle = boulevard ? '#f3c969' : '#ffffff';
+    ctx.lineWidth = boulevard ? 18 : 10;
+    ctx.stroke();
+    ctx.strokeStyle = boulevard ? '#d5a94e' : '#c7c3bc';
+    ctx.lineWidth = boulevard ? 1.5 : 1;
+    ctx.stroke();
+  }
 
   ctx.save();
-  ctx.fillStyle = 'rgba(214, 244, 242, 0.72)';
+  ctx.fillStyle = '#4d4a44';
   ctx.font = '700 12px Chakra Petch, sans-serif';
   ctx.letterSpacing = '1px';
-  ctx.fillText('BV. GÁLVEZ', 28, 14 * TILE - 7);
-  ctx.save(); ctx.translate(11 * TILE - 7, VIEW_H - 34); ctx.rotate(-Math.PI / 2); ctx.fillText('AV. RIVADAVIA', 0, 0); ctx.restore();
+  const galvez = projectSantaFePoint(SANTA_FE_ROADS[0].points[2]);
+  ctx.fillText('BV. GÁLVEZ', galvez.x * TILE + 8, galvez.y * TILE - 9);
+  const rivadavia = projectSantaFePoint(SANTA_FE_ROADS[1].points[2]);
+  ctx.save(); ctx.translate(rivadavia.x * TILE - 9, rivadavia.y * TILE + 42); ctx.rotate(-Math.PI / 2); ctx.fillText('AV. RIVADAVIA', 0, 0); ctx.restore();
   ctx.font = '10px Chakra Petch, sans-serif';
-  ctx.fillStyle = 'rgba(140, 183, 190, 0.55)';
+  ctx.fillStyle = '#68645d';
   ctx.fillText('SANTA FE · ARGENTINA', 20, VIEW_H - 18);
   ctx.textAlign = 'right';
   ctx.fillText('© OpenStreetMap contributors', VIEW_W - 20, VIEW_H - 18);

@@ -39,25 +39,52 @@ export const MAP: string[] = [
   '#######################',
 ];
 
+export interface SantaFeRoad { name: string; points: readonly (readonly [number, number])[]; }
+
 /**
- * Malla vial del escenario Santa Fe. Representa el entramado público de la
- * zona Bv. Gálvez / Av. Rivadavia: las líneas son calles y cada bloque oscuro
- * es una manzana no transitable. Se mantiene ortogonal para que el motor de
- * movimiento por intersecciones sea determinista.
+ * Extracto de vías de OpenStreetMap (2026-10-15), centrado en Bv. Gálvez y
+ * Av. Rivadavia. Coordenadas [longitud, latitud]. Se empaqueta localmente para
+ * que una partida no dependa del servicio de OSM.
+ * © OpenStreetMap contributors, ODbL.
  */
+export const SANTA_FE_ROADS: readonly SantaFeRoad[] = [
+  { name: 'Bulevar Gálvez', points: [[-60.701107,-31.636118],[-60.700318,-31.636123],[-60.699696,-31.636262],[-60.69865,-31.636478],[-60.697573,-31.63672],[-60.69657,-31.637089],[-60.695496,-31.637307]] },
+  { name: 'Avenida Rivadavia', points: [[-60.701061,-31.635958],[-60.701107,-31.636118],[-60.701468,-31.637272],[-60.701786,-31.638334],[-60.702117,-31.639408],[-60.702472,-31.640587],[-60.702844,-31.641776]] },
+  { name: 'Bulevar Pellegrini', points: [[-60.707225,-31.634798],[-60.705895,-31.635079],[-60.704648,-31.635181],[-60.703242,-31.63564],[-60.702483,-31.635802],[-60.701061,-31.635958]] },
+  { name: '25 de Mayo', points: [[-60.701707,-31.633117],[-60.702097,-31.634395],[-60.702483,-31.635648],[-60.702542,-31.635802],[-60.7029,-31.636973],[-60.703217,-31.638031],[-60.703899,-31.640249],[-60.70458,-31.642364]] },
+  { name: 'San Jerónimo', points: [[-60.703866,-31.632629],[-60.704263,-31.633917],[-60.704648,-31.635181],[-60.705061,-31.636496],[-60.705686,-31.638603],[-60.70604,-31.639785],[-60.707078,-31.643113]] },
+  { name: 'Cándido Pujato', points: [[-60.706611,-31.6334],[-60.705289,-31.633684],[-60.704263,-31.633917],[-60.702932,-31.634202],[-60.700683,-31.634708],[-60.700579,-31.634831],[-60.700653,-31.635089]] },
+  { name: 'Santiago del Estero', points: [[-60.706549,-31.63729],[-60.705366,-31.637547],[-60.703915,-31.637862],[-60.701786,-31.638334],[-60.700595,-31.638599],[-60.699352,-31.638875]] },
+  { name: 'San Luis', points: [[-60.699734,-31.636403],[-60.700003,-31.637328],[-60.700289,-31.638226],[-60.700595,-31.638599],[-60.701052,-31.639627],[-60.701756,-31.641909],[-60.70239,-31.644018]] },
+  { name: 'Belgrano', points: [[-60.698104,-31.634664],[-60.69865,-31.636478],[-60.698965,-31.637551],[-60.699217,-31.638454],[-60.699665,-31.639919],[-60.700061,-31.641108],[-60.700705,-31.643236]] },
+  { name: 'Balcarce', points: [[-60.695761,-31.638225],[-60.697744,-31.637805],[-60.698965,-31.637551],[-60.700003,-31.637328],[-60.701017,-31.637292],[-60.701468,-31.637272]] },
+  { name: 'Pedro Vittori', points: [[-60.699667,-31.63142],[-60.700297,-31.633418],[-60.700683,-31.634708],[-60.700791,-31.635058],[-60.701061,-31.635958]] },
+  { name: 'Mariano Comas', points: [[-60.707779,-31.631787],[-60.70621,-31.632117],[-60.70526,-31.632322],[-60.703866,-31.632629],[-60.701707,-31.633117],[-60.700297,-31.633418]] },
+];
+
+const SANTA_FE_CENTER: readonly [number, number] = [-60.701107, -31.636118];
+const SANTA_FE_SCALE = 2200;
+
+/** Proyección local de OSM a las coordenadas del motor, centrada en el cruce. */
+export function projectSantaFePoint([lon, lat]: readonly [number, number]): { x: number; y: number } {
+  return { x: 11.5 + (lon - SANTA_FE_CENTER[0]) * SANTA_FE_SCALE, y: 14.5 - (lat - SANTA_FE_CENTER[1]) * SANTA_FE_SCALE };
+}
+
+/** Rasteriza los trazos de OSM en corredores que usa el motor de colisiones. */
 function buildSantaFeMap(): string[] {
-  const roadX = new Set([2, 5, 8, 11, 14, 17, 20]);
-  const roadY = new Set([2, 5, 8, 11, 14, 17, 20, 22]);
-  const power = new Set(['2,2', '20,2', '2,20', '20,20']);
-  const rows: string[] = [];
-  for (let y = 0; y < ROWS; y++) {
-    let row = '';
-    for (let x = 0; x < COLS; x++) {
-      const onStreet = x > 0 && x < COLS - 1 && y > 0 && y < ROWS - 1 && (roadX.has(x) || roadY.has(y));
-      row += onStreet ? (power.has(`${x},${y}`) ? 'o' : '.') : '#';
+  const street = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => false));
+  const paint = (x: number, y: number): void => {
+    for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) {
+      if (xx > 0 && xx < COLS - 1 && yy > 0 && yy < ROWS - 1) street[yy][xx] = true;
     }
-    rows.push(row);
+  };
+  for (const road of SANTA_FE_ROADS) for (let i = 1; i < road.points.length; i++) {
+    const a = projectSantaFePoint(road.points[i - 1]), b = projectSantaFePoint(road.points[i]);
+    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) * 3));
+    for (let step = 0; step <= steps; step++) paint(Math.round(a.x + (b.x - a.x) * step / steps), Math.round(a.y + (b.y - a.y) * step / steps));
   }
+  const power = new Set(['3,3', '19,4', '4,21', '18,20']);
+  const rows = street.map((line, y) => line.map((onStreet, x) => onStreet ? (power.has(`${x},${y}`) ? 'o' : '.') : '#').join(''));
   // Casa de los fantasmas: edificio con acceso desde Av. Rivadavia.
   const edit = (x: number, y: number, value: string): void => {
     rows[y] = `${rows[y].slice(0, x)}${value}${rows[y].slice(x + 1)}`;
